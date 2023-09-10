@@ -4,14 +4,19 @@ let env = { PROJECT_ROOT = builtins.getEnv "PWD"; };
 in {
   inherit env;
 
-  imports = [ ./src/modules/kind/default.nix ];
+  imports = [ ./src/modules/kind/default.nix ./src/modules/nexus/default.nix ];
 
   services = {
+    nexus = { enable = true; };
     kind = {
       enable = true;
       features = {
+        flux = {
+          enable = false;
+          values = "";
+        };
         argocd = {
-          enable = true;
+          enable = false;
           values = ''
             crds:
               install: true
