@@ -1,10 +1,10 @@
 _:
 
-let env = { PROJECT_ROOT = builtins.getEnv "PWD"; };
+let
+  env = { PROJECT_ROOT = builtins.getEnv "PWD"; };
+  imports = import ./default.nix;
 in {
-  inherit env;
-
-  imports = [ ./src/modules/kind/default.nix ./src/modules/nexus/default.nix ];
+  inherit env imports;
 
   services = {
     nexus = { enable = true; };
@@ -16,7 +16,7 @@ in {
           values = "";
         };
         argocd = {
-          enable = false;
+          enable = true;
           values = ''
             crds:
               install: true
