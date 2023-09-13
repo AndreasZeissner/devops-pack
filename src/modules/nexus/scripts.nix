@@ -53,7 +53,7 @@ rec {
     docker rm ${name}
     ${
       if persist then ''
-        echo "skipping to delete local persistence $PROJECT_ROOT/${name}-data"
+        echo "skipping to delete local persistence $(git rev-parse --show-toplevel)/${name}-data"
       '' else ''
         docker volume rm ${name}-data
       ''
@@ -61,9 +61,9 @@ rec {
   '';
   nexus-up = ''
     ${if persist then ''
-      mkdir -p $PROJECT_ROOT/${name}-data
-      mkdir -p $PROJECT_ROOT/${name}-data
-      # chown -R 200 $PROJECT_ROOT/${name}-data
+      mkdir -p $(git rev-parse --show-toplevel)/${name}-data
+      mkdir -p $(git rev-parse --show-toplevel)/${name}-data
+      # chown -R 200 $(git rev-parse --show-toplevel)/${name}-data
     '' else
       ""}
 
@@ -74,7 +74,7 @@ rec {
     --name ${name} \
     ${
       if persist then
-        "-v $PROJECT_ROOT/${name}-data:/nexus-data"
+        "-v $(git rev-parse --show-toplevel)/${name}-data:/nexus-data"
       else
         "-v ${name}-data:/nexus-data"
     } \
