@@ -29,13 +29,6 @@ in {
             nodeRegistration:
               kubeletExtraArgs:
                 node-labels: "ingress-ready=true"
-          extraPortMappings:
-          - containerPort: 80
-            hostPort: 80
-            protocol: TCP
-          - containerPort: 443
-            hostPort: 443
-            protocol: TCP
       '';
       type = types.str;
     };
