@@ -13,6 +13,8 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
+        inherit (pkgs.lib.attrsets) mapAttrsToList;
+
         packages = [ ];
 
         nixosModules = {
@@ -24,7 +26,7 @@
           inherit inputs pkgs;
           modules = [{
             inherit packages;
-            imports = [ nixosModules.kind nixosModules.nexus ];
+            imports = mapAttrsToList (_: value: value) nixosModules;
             services = {
               nexus = { enable = true; };
               kind = {
