@@ -9,17 +9,15 @@ in {
   options.services.kind = {
     enable = mkEnableOption (lib.mdDoc "kind");
 
-    clusterName = mkOption {
+    name = mkOption {
       default = "kind-devops-pack";
       type = types.str;
+      description = ''
+        Name of the cluster which gets created.
+      '';
     };
 
-    ingress = mkOption {
-      default = false;
-      type = types.bool;
-    };
-
-    clusterDefinition = mkOption {
+    definition = mkOption {
       default = ''
         kind: Cluster
         apiVersion: kind.x-k8s.io/v1alpha4
@@ -42,6 +40,12 @@ in {
       type = types.str;
     };
 
+    # TODO: this should be handled as a "feature" same as flux and argocd.
+    ingress = mkOption {
+      default = false;
+      type = types.bool;
+    };
+
     features = mkOption {
       default = {
         flux = {
@@ -61,13 +65,9 @@ in {
   };
 
   config = let
-    cluster = {
-      name = cfg.clusterName;
-      definition = cfg.clusterDefinition;
-      ingress = cfg.ingress;
-      features = cfg.features;
-      options = { persist = cfg.persist; };
-    };
+    inherit (cfg) name definition ingress features;
+
+    cluster = { inherit name definition ingress features; };
 
     argocd = import ./scripts/argocd.nix { inherit cluster; };
     flux = import ./scripts/flux.nix { inherit cluster; };
@@ -76,23 +76,17 @@ in {
 
   in mkIf cfg.enable {
     packages = [ pkgs.kubernetes-helm ]
-      ++ mapAttrsToList (pkgs.writeShellScriptBin) scripts
+      ++ mapAttrsToList pkgs.writeShellScriptBin scripts
       ++ (if cluster.features.argocd.enable then
-        [ pkgs.argocd ] ++ mapAttrsToList (pkgs.writeShellScriptBin) argocd
+        [ pkgs.argocd ] ++ mapAttrsToList pkgs.writeShellScriptBin argocd
       else
         [ ]) ++ (if cluster.features.flux.enable then
-          [ pkgs.fluxcd ] ++ mapAttrsToList (pkgs.writeShellScriptBin) flux
+          [ pkgs.fluxcd ] ++ mapAttrsToList pkgs.writeShellScriptBin flux
         else
           [ ]);
 
     processes.kind = {
-      exec = ''
-        set -e
-        ${scripts.kind-clean}
-        ${scripts.kind-up}
-        ${scripts.kind-features-bootstrap}
-        ${scripts.kind-health}
-      '';
+      exec = scripts.kind-process;
 
       process-compose = {
         readiness_probe = {

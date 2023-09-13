@@ -15,7 +15,6 @@
       --values ${
         builtins.toFile "helm-values-argocd" cluster.features.flux.values
       } \
-      --atomic \
       --create-namespace \
       --replace \
       --force \

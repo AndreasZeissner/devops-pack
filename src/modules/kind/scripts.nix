@@ -11,12 +11,14 @@ rec {
     kubectl --context kind-${cluster.name} apply \
       -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
 
+    sleep 30
     kubectl --context kind-${cluster.name} wait \
       --namespace ingress-nginx \
       --for=condition=ready pod \
       --selector=app.kubernetes.io/component=controller \
       --timeout=300s
 
+    sleep 30
     kubectl --context kind-${cluster.name} apply \
       -f $PROJECT_ROOT/src/modules/kind/templates/ingress-nginx/pod.yaml
   '';
@@ -57,5 +59,15 @@ rec {
     cat <<EOF | kind create cluster --name ${cluster.name} --config=-
     ${cluster.definition}
     EOF
+  '';
+  kind-definition = ''
+    echo "${cluster.definition}"
+  '';
+  kind-process = ''
+    set -e
+    ${kind-clean}
+    ${kind-up}
+    ${kind-features-bootstrap}
+    ${kind-health}
   '';
 }

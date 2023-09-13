@@ -22,7 +22,6 @@
     helm repo add argo https://argoproj.github.io/argo-helm
     helm --kube-context kind-${cluster.name} install \
     --namespace argocd \
-    --atomic \
     --create-namespace \
     --replace \
     --force \
